@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+ 
+  <body>
+    <h1>就吃这个了：<span></span></h1>
+    <div class="btn">
+      <button class="select">随机选菜</button>
+      <button class="add" style="margin-left: 20px">新增菜单</button>
+      <button class="del" style="margin-left: 20px">删除菜单</button>
+    </div>
+    <div id="menu"></div>
+  </body>
+  <style>
+    .hover {
+      animation: identifier 1.5s linear 0s infinite normal;
+      position: relative;
+      cursor: pointer;
+    }
+    .hover::after {
+      position: absolute;
+      display: block;
+      content: '×';
+      right: 0;
+      top: 0;
+      width: 16px;
+      height: 16px;
+      background-color: red;
+      text-align: center;
+      line-height: 16px;
+      color: white;
+    }
+    @keyframes identifier {
+      0% {
+        position: relative;
+        top: 0px;
+        left: 0;
+      }
+      33% {
+        position: relative;
+        top: -10px;
+        left: 0;
+      }
+      66% {
+        position: relative;
+        top: 10px;
+        left: 0;
+      }
+      100% {
+        position: relative;
+        top: 0px;
+        left: 0;
+      }
+    }
+    body {
+      background-color: #96ceb4;
+    }
+    #menu {
+      width: 1200px;
+      min-height: 30px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 3px solid white;
+    }
+    #menu > span {
+      display: inline-block;
+      padding: 15px 10px;
+      background-color: #ffad60;
+      margin-right: 10px;
+    }
+    h1 > span {
+      color: #d9534f;
+    }
+    h1 {
+      text-align: center;
+    }
+    .btn {
+      text-align: center;
+    }
+    .select {
+      background-color: #1f6ed4;
+    }
+    button {
+      width: 80px;
+      height: 40px;
+      border: none;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      background-color: #2e94b9;
+      color: white;
+    }
+    .del {
+      background-color: #c73b0b;
+    }
+    button:hover {
+      cursor: pointer;
+      background-color: #fe9000;
+    }
+  </style>
+  <script>
+    let box = document.getElementById('menu');
+    let select = document.querySelector('h1 span');
+    let btn = document.querySelector('.select');
+    let add = document.querySelector('.add');
+    let del = document.querySelector('.del');
+    let list = JSON.parse(localStorage.getItem('List')) || [];
+ 
+    window.onload = function () {
+    //首次进入页面时，获取本地存的值进行渲染
+      for (let i = 0; i < list.length; i++) {
+        let span = document.createElement('span');
+        span.innerText = list[i];
+        box.appendChild(span);
+      }
+    
+    //新增
+      add.addEventListener('click', function () {
+        let menu = document.querySelectorAll('#menu span');
+        if (menu.length > 0) {
+          menu.forEach((item) => {
+            item.classList.remove('hover');
+          });
+        }
+        let val = prompt('请输入菜名：') || '';
+        if (val.trim() != '') {
+          list.push(val);
+          let span = document.createElement('span');
+          span.innerHTML = val;
+          box.appendChild(span);
+        }
+      });
+ 
+    //随机抽取
+      btn.addEventListener('click', function () {
+        let menu = document.querySelectorAll('#menu span');
+        if (list.length < 2) {
+          alert('菜单数量大于1个才能随机选择哦!');
+          return;
+        }
+        select.innerText = '';
+        let index;
+        let time = setInterval(function () {
+          menu.forEach((item) => {
+            item.style.color = 'black';
+            item.style.backgroundColor = '#ffad60';
+            item.style.border = 'none';
+            item.classList.remove('hover');
+          });
+          index = parseInt(Math.random() * list.length);
+          menu[index].style.color = 'red';
+          menu[index].style.backgroundColor = '#ffeead';
+          menu[index].style.border = '1px solid #FFF000';
+        }, 100);
+        setTimeout(() => {
+          select.innerText = menu[index].innerText;
+          clearInterval(time);
+        }, 1500);
+      });
+ 
+    //删除时元素浮动的动态效果
+      del.addEventListener('click', function () {
+        let menu = document.querySelectorAll('#menu span');
+        if (menu.length > 0) {
+          menu.forEach((item) => {
+            item.classList.add('hover');
+          });
+        }
+      });
+    
+    //删除菜
+      box.addEventListener('click', function (e) {
+        if (e.target.className == 'hover') {
+          let delList = e.target.innerText;
+          box.removeChild(e.target);
+          list.forEach((item, index) => {
+            if (item == delList) {
+              list.splice(index, 1);
+            }
+          });
+        }
+      });
+ 
+    //删除时如果点击其他地方，取消元素的浮动效果
+      document.addEventListener('click', function (e) {
+        let isBox = box.contains(e.target);
+        if (!isBox && e.target.className !== 'del') {
+          let menu = document.querySelectorAll('#menu span');
+          menu.forEach((item) => {
+            item.classList.remove('hover');
+          });
+        }
+      });
+    };
+    
+    //离开页面时进行缓存
+    window.onbeforeunload = function () {
+      localStorage.setItem('List', JSON.stringify(list));
+    };
+  </script>
+</html>
